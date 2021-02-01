@@ -37,10 +37,11 @@ file.exists('berliner_bezirke.shp')
 # see "Data visualization" by Kieran Healy p.177
 
 #load geodata = region outlines
+library(rgdal)
 berlin_spdf=readOGR(dsn= getwd(), layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
 # convert shp data into data frame - THIS STEP IS ESSENTIAL 
-bm<-map_data(berlin_spdf)
-bm$Kiez<-bm$region
+#bm<-map_data(berlin_spdf)
+#bm$Kiez<-bm$region
 head(bm)
 bm$region<-NULL
 bm$subregion<-NULL
@@ -63,10 +64,23 @@ p + geom_polygon(color="grey90",size=0.1)+
 #kiezdata$name<-NULL
 
 #rename regions with umlaut, otherwise they won't match! 
+levels(berlin_spdf@data$name)
 
 levels(berlin_spdf@data$name)[levels(berlin_spdf@data$name)=='Tempelhof-Schöneberg'] <- 'Tempelhof-Schoeneberg'
 levels(berlin_spdf@data$name)[levels(berlin_spdf@data$name)=='Neukölln'] <- 'Neukoelln'
 levels(berlin_spdf@data$name)[levels(berlin_spdf@data$name)=='Treptow-Köpenick'] <- 'Treptow-Koepenick'
+
+#load data with frequency to join with spacial data. Filter, group and summarise first
+setwd("D:/Dropbox/R_wissen/berlin_names_spacial")
+df <- read.csv("data/berlin.csv")
+
+library(dplyr)
+kiezdata<-df %>% 
+  select(vorname,Kiez,anzahl) %>% 
+  filter(vorname == "Max")%>%
+  group_by(Kiez)%>%
+  summarise(s=sum(anzahl))
+kiezdata
 
 #check
 head(bm)
@@ -111,3 +125,26 @@ berlin +
   geom_polygon(aes(fill = id), color = 'gray', size = 0.1) +
   coord_fixed(1.3)
 
+# https://learn.r-journalism.com/en/mapping/census_maps/census-maps/
+library(tigris)
+# with tigris it is possible to join geodata with a dataframe
+anzahlmap <- geo_join(berlin_spdf, kiezdata, "name", "Kiez")
+
+pal <- colorNumeric("Greens", domain=anzahlmap$s)
+popup_sb <- paste0("Total: ", as.character(anzahlmap$s))
+
+
+library(leaflet)
+leaflet() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  setView(13.41053,52.52437, zoom = 10) %>% 
+  addPolygons(data = anzahlmap , 
+              fillColor = ~pal(anzahlmap$s), 
+              fillOpacity = 0.7, 
+              weight = 0.2, 
+              smoothFactor = 0.2, 
+              popup = ~popup_sb) %>%
+  addLegend(pal = pal, 
+            values = anzahlmap$s, 
+            position = "bottomright", 
+            title = "Names")

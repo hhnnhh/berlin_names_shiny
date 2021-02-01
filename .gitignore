@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+
+data/Berlin-Geodaten-master/**
+x.R
+berlin_names_spacial.Rproj

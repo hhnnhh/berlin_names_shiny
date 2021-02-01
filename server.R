@@ -16,9 +16,9 @@ library(RColorBrewer)
 library(shinycssloaders)
 
 
-#df <- read.csv("data/berlin.csv")
+df <- read.csv("data/berlin.csv")
 #df <- df %>% select(vorname, anzahl, year, Kiez,geschlecht)
-#bm <- read.csv("data/berlinmapdata.csv")
+bm <- read.csv("data/berlinmapdata.csv")
 #df$year <-as.Year(df$year)
 #str(df)
 

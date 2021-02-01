@@ -1,6 +1,6 @@
 library(dplyr)
 library(ggplot2)
-
+library(readr)
 # Data format problem: umlaut and sonderzeichen are not displayed correctly, 
 # if not provided in UTF-8-BOM format. Problem with UTF-8-BOM: the name of the
 # first column is changed to ï..vorname and therefore not readable by program.
@@ -38,11 +38,18 @@ df<-df %>%
   rename(
     vorname = ï..vorname
   )
+
+bm<-bm %>% 
+  rename(
+    long = ï..long
+  )
+
+bm <- cbind(a = 0, bm)
 # now okay?
-names(df)
+names(bm)
 
 # save copy
-write_excel_csv(df, "data/berlin.csv")
+write_excel_csv(bm, "data/berlinmapdata.csv")
 
 # there are some strange "names", such as "Mittelname", "Großvatername"
 (1:nrow(df))[df[,1] == "(Mittelname)"]

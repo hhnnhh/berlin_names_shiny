@@ -25,6 +25,44 @@ font-size: 15px;
 shinyUI(fluidPage(
 
     navbarPage("Berlin Names", theme = shinytheme("lumen"),
+               
+               tabPanel("Kiez Popularity", fluid = TRUE, icon = icon("globe"),
+                        tags$style(button_color_css),
+                        
+                        
+                        # Application title
+                        
+                        # Sidebar with a slider input for number of bins
+                        sidebarLayout(
+                            sidebarPanel(
+                                # checkboxGroupInput(inputId = "GenderId",
+                                #                    label = "Select Gender(s):",
+                                #                    choices = c("Male" = "m", "Female" = "w"),
+                                #                    selected = "w"),
+                                titlePanel("Frequency of Name by Kiez"),
+                                
+                                helpText("You can choose a name from the selection or type a name of your choice."),
+                                selectInput("names2",
+                                            "First names:",
+                                            choices=unique(df$vorname),
+                                            selected = NULL,
+                                            multiple = FALSE, 
+                                            selectize = TRUE),
+                                
+                                
+                                actionButton('select2', 'Select'),
+                                
+                                helpText("Click Kiez for more information. "),
+                                
+                            ),
+                            
+                            # Show a plot of the generated distribution
+                            mainPanel(
+                                shinycssloaders::withSpinner((leafletOutput("berlin")),color = getOption("spinner.color", default = "#D3D3D3"))#,
+                                #tableOutput("berliy") #if used, don't forget to put comma behind leafletOutput
+                                
+                            ))
+               ),
                tabPanel("Name Trend", fluid = TRUE, icon = icon("wave-square"),
                         tags$style(button_color_css),
 
@@ -62,42 +100,7 @@ shinyUI(fluidPage(
     ),
 
 
-tabPanel("Kiez Popularity", fluid = TRUE, icon = icon("globe"),
-         tags$style(button_color_css),
-         
-         
-         # Application title
-         
-         # Sidebar with a slider input for number of bins
-         sidebarLayout(
-             sidebarPanel(
-                 # checkboxGroupInput(inputId = "GenderId",
-                 #                    label = "Select Gender(s):",
-                 #                    choices = c("Male" = "m", "Female" = "w"),
-                 #                    selected = "w"),
-                 titlePanel("Frequency of Name by Kiez"),
-                 
-                 helpText("You can choose a name from the selection or type a name of your choice."),
-                 selectInput("names2",
-                             "First names:",
-                             choices=unique(df$vorname),
-                             selected = NULL,
-                             multiple = FALSE, 
-                             selectize = TRUE),
-                 
-                 
-                 actionButton('select2', 'Select'),
-                 
-             ),
-             
-             # Show a plot of the generated distribution
-             mainPanel(
-                 shinycssloaders::withSpinner((leafletOutput("berlin")),color = getOption("spinner.color", default = "#D3D3D3")),
-                 #tableOutput("berlix"),
-                 tableOutput("berliy")
-                 
-             ))
-),
+
 
 tabPanel("About", fluid = TRUE,
          fluidRow(

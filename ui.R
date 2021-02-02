@@ -21,24 +21,18 @@ background: DodgerBlue;
 font-size: 15px;
 }"
 
-# Define UI for application that draws a histogram
+# Define UI for application 
 shinyUI(fluidPage(
 
     navbarPage("Berlin Names", theme = shinytheme("lumen"),
-               
+
+######### front end for "Kiez Popularity tab"  
+
                tabPanel("Kiez Popularity", fluid = TRUE, icon = icon("globe"),
                         tags$style(button_color_css),
                         
-                        
-                        # Application title
-                        
-                        # Sidebar with a slider input for number of bins
                         sidebarLayout(
                             sidebarPanel(
-                                # checkboxGroupInput(inputId = "GenderId",
-                                #                    label = "Select Gender(s):",
-                                #                    choices = c("Male" = "m", "Female" = "w"),
-                                #                    selected = "w"),
                                 titlePanel("Popularity by Kiez"),
                                 
                                 helpText("You can choose a name from the selection or type a name of your choice."),
@@ -51,24 +45,28 @@ shinyUI(fluidPage(
                                 
                                 
                                 actionButton('select2', 'Select'),
-                                
-                                helpText("Click Kiez for more information. "),
+                                br(),
+                                br(),
+                                helpText("Click on each Kiez for more information!"),
                                 
                             ),
                             
-                            # Show a plot of the generated distribution
+                            # Show the final map (optional: results table)
                             mainPanel(
                                 shinycssloaders::withSpinner((leafletOutput("berlin")),color = getOption("spinner.color", default = "#D3D3D3"))#,
                                 #tableOutput("berliy") #if used, don't forget to put comma behind leafletOutput
                                 
                             ))
                ),
+
+######### front end for "Name Trend tab"
+
                tabPanel("Name Trend", fluid = TRUE, icon = icon("wave-square"),
                         tags$style(button_color_css),
 
 
     # Application title
-    # Sidebar with a slider input for number of bins
+    # Sidebar with drop down menu
     sidebarLayout(
         sidebarPanel(
             
@@ -76,6 +74,7 @@ shinyUI(fluidPage(
             #                    label = "Select Gender(s):",
             #                    choices = c("Male" = "m", "Female" = "w"),
             #                    selected = "w"),
+            
             titlePanel("Trend from 2012 to 2019"),
             
             helpText("You can choose a name from the selection or type a name of your choice."),
@@ -92,14 +91,14 @@ shinyUI(fluidPage(
             
             ),
 
-        # Show a plot of the generated distribution
+        # Show a line graph with name trend
         mainPanel(
             plotOutput("distPlot"),
 
         ))
     ),
 
-
+######### front end for "About me - tab"
 
 
 tabPanel("About", fluid = TRUE,

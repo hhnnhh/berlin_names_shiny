@@ -14,35 +14,43 @@
 library(shiny)          # for web app
 library(dplyr)          # for data wrangling
 library(shinycssloaders)# for spinner when waiting to load
+#options(tigris_use_cache = TRUE)
 library(tigris)         # for geo_join (join spacial data with df)
 library(leaflet)        # for interactive map
 library(rgdal)          # for loading spacial data with readOGR
 
+
+# df <- read.csv("data/berlin.csv") # data for name trend and wordcloud
+# map_df <- read.csv("data/map_df.csv") # data for rank,%,frequency in map
+# map data with polygons from https://github.com/funkeinteraktiv/Berlin-Geodaten
 df <- read.csv("data/berlin.csv") # data for name trend and wordcloud
 map_df <- read.csv("data/map_df.csv") # data for rank,%,frequency in map
-# map data with polygons from https://github.com/funkeinteraktiv/Berlin-Geodaten
 berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
+
+
 
 
 
 shinyServer(function(input, output) {
   
+
+
 ######### back end for "Kiez popularity tab"   
-  
+
   # filter by name input and select some columns
         filteredName2 <- reactive({
-         map_df %>% 
+         map_df %>%
            filter(vorname == input$names2)%>%
            select(vorname,Kiez,summe,percentage,rank)
      })
-     
-  # join filtered data set with spacial data 
+
+  # join filtered data set with spacial data
      filteredFinal2 <- eventReactive(input$select2, {
        geo_join(berlin_spdf, filteredName2(), "name", "Kiez")
 
      })
-     
-   #reactive pop-up on map will display RANK, PERCENTAGE, TOTAL  
+
+   #reactive pop-up on map will display RANK, PERCENTAGE, TOTAL
      popup_sb <- reactive({
        paste0("<strong>",as.character(filteredFinal2()$vorname),
               "</strong>"," in ",as.character(filteredFinal2()$name),
@@ -50,7 +58,7 @@ shinyServer(function(input, output) {
               "<br /><strong>Percentage: </strong>", as.character(filteredFinal2()$percentage),
               "%","<strong><br />Total: </strong>", as.character(filteredFinal2()$summe))
      })
-     
+
     # reactive color dependent on rank (lower rank = darker green)
      pal <- reactive({
        colorNumeric(
@@ -59,13 +67,13 @@ shinyServer(function(input, output) {
          reverse=TRUE # lower rank = darker green
        )
      })
-     
-    #display table data for debugging 
+
+    #display table data for debugging
        # output$berliy <- renderTable({
        #   filteredFinal2()
        # })
-   
-     #start Leaflet interactive map output   
+
+     #start Leaflet interactive map output
       output$berlin <- renderLeaflet({
            input$select2 # wait for action button click before rendering map w/ isolate
            isolate(
@@ -90,7 +98,7 @@ shinyServer(function(input, output) {
 
           ) #close isolation
 
-      }) # close leaflet output 
+      }) # close leaflet output
  
 ######### back end for "Name Trend tab"   
       

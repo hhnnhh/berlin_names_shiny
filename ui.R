@@ -9,6 +9,13 @@
 
 library(shiny)
 library(shinythemes)
+library(rgdal)          # necessary for using readOGR
+library(leaflet)
+
+
+df <- read.csv("data/berlin.csv") # data for name trend and wordcloud
+map_df <- read.csv("data/map_df.csv") # data for rank,%,frequency in map
+berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
 
 
 button_color_css <- "
@@ -30,32 +37,32 @@ shinyUI(fluidPage(
 
                tabPanel("Kiez Popularity", fluid = TRUE, icon = icon("globe"),
                         tags$style(button_color_css),
-                        
+
                         sidebarLayout(
                             sidebarPanel(
                                 titlePanel("Popularity by Kiez"),
-                                
+
                                 helpText("You can choose a name from the selection or type a name of your choice."),
                                 selectInput("names2",
                                             "First names:",
                                             choices=unique(df$vorname),
                                             selected = NULL,
-                                            multiple = FALSE, 
+                                            multiple = FALSE,
                                             selectize = TRUE),
-                                
-                                
+
+
                                 actionButton('select2', 'Select'),
                                 br(),
                                 br(),
                                 helpText("Click on each Kiez for more information!"),
-                                
+
                             ),
-                            
+
                             # Show the final map (optional: results table)
                             mainPanel(
                                 shinycssloaders::withSpinner((leafletOutput("berlin")),color = getOption("spinner.color", default = "#D3D3D3"))#,
                                 #tableOutput("berliy") #if used, don't forget to put comma behind leafletOutput
-                                
+
                             ))
                ),
 

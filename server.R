@@ -11,16 +11,20 @@ getwd()
 
 library(shiny)
 library(dplyr)
-library(ggplot2)
-library(RColorBrewer)
+#library(ggplot2)
+#library(RColorBrewer)
 library(shinycssloaders)
-
+library(tigris)
+library(leaflet)
+library(rgdal)
 
 df <- read.csv("data/berlin.csv")
 #df <- df %>% select(vorname, anzahl, year, Kiez,geschlecht)
-bm <- read.csv("data/berlinmapdata.csv")
-#df$year <-as.Year(df$year)
-#str(df)
+map_df <- read.csv("data/map_df.csv")
+#file.exists('data/map/berliner_bezirke.shp')
+berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
+
+
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
@@ -61,16 +65,19 @@ shinyServer(function(input, output) {
      
      
      filteredName2 <- reactive({
-         df %>%
-             filter(vorname == input$names2) 
+         #df %>%
+             #filter(vorname == input$names2)
+         map_df %>% 
+           filter(vorname == input$names2)%>%
+           select(vorname,Kiez,summe,percentage,rank)
      })
      
      
-     filteredKiez <-reactive({
-         filteredName2() %>%
-             group_by(Kiez)%>%
-             summarise(f=sum(anzahl))
-    })
+    #  filteredKiez <-reactive({
+    #      filteredName2() %>%
+    #          group_by(Kiez)%>%
+    #          summarise(f=sum(anzahl))
+    # })
      
      # filteredShort <-reactive({
      #     filteredKiez() %>%
@@ -78,11 +85,33 @@ shinyServer(function(input, output) {
      #         summarise(ff=sum(f))
      # })
      
+
+     # colorstyle <- reactive({
+     #   as.character(input$colorstyle)
+     # })
+     # 
      filteredFinal2 <- eventReactive(input$select2, {
-         left_join(bm,filteredKiez())
+       geo_join(berlin_spdf, filteredName2(), "name", "Kiez")
+         #left_join(bm,filteredKiez())
          #filteredShort()
          #filteredKiez()
          
+     })
+     
+     popup_sb <- reactive({
+       paste0("<strong>",as.character(filteredFinal2()$vorname),
+              "</strong>"," in ",as.character(filteredFinal2()$name),
+              ":<br><strong>Rank: </strong>", as.character(filteredFinal2()$rank),
+              "<br /><strong>Percentage: </strong>", as.character(filteredFinal2()$percentage),
+              "%","<strong><br />Total: </strong>", as.character(filteredFinal2()$summe))
+     })
+     
+     pal <- reactive({
+       colorNumeric(
+         palette = "Greens",
+         domain = filteredFinal2()$rank,
+         reverse=TRUE # lower rank = darker green
+       )
      })
      
      
@@ -94,19 +123,36 @@ shinyServer(function(input, output) {
        # })
        
        output$berliy <- renderTable({
-               filteredFinal2()
+         filteredFinal2()
        })
      
-      output$berlin <- renderPlot({
-          input$select2
-          isolate(
-          ggplot(data=filteredFinal2(), mapping = aes(x=long,y=lat,group=group,fill=f))+
-              geom_polygon(color="grey90",size=0.1)+
-              coord_map(projection="albers",lat0=13,lat1=53)+
-              scale_fill_gradient2(low="#d3d3d3",
-                                   mid=scales::muted("#767171"),
-                                   high=rgb(0.1,0.7,0.1,0.8))
-          #guides(fill=FALSE)
+      output$berlin <- renderLeaflet({
+           input$select2
+           isolate(
+            
+           # pal <- colorNumeric(palette="Greens", domain=filteredFinal2()$percentage)
+            #popup_sb <- paste0("<strong>",as.character(filteredFinal2()$vorname),"</strong>"," in ",as.character(filteredFinal2()$name),":<br><strong>Rank: </strong>", as.character(filteredFinal2()$rank),"<br /><strong>Percentage: </strong>", as.character(filteredFinal2()$percentage),"%","<strong><br />Total: </strong>", as.character(filteredFinal2()$summe))
+
+             
+         leaflet() %>%
+               # addProviderTiles("CartoDB.Positron") %>%
+               # setView(13.41053,52.52437, zoom = 10) %>%
+               addPolygons(data = berlin_spdf,
+                           fillColor = ~pal()(filteredFinal2()$rank),
+                           fillOpacity = 0.9,
+                           weight = 0.2,
+                           smoothFactor = 0.2,#remove bracket and add comma later
+                            highlight = highlightOptions(
+                              weight = 5,
+                              color = "#666",
+                              fillOpacity = 0.7,
+                              bringToFront = TRUE),
+                           popup = ~popup_sb()) %>%
+                 addLegend(pal = pal(),
+                           values = filteredFinal2()$rank,
+                           position = "bottomright",
+                           title = "rank")
+
           )
 
       })

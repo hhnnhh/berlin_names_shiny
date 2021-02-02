@@ -52,36 +52,36 @@ df$geschlecht <-NULL
 #   mutate(rank=round(rank(desc(percentage))))
 # p
 
-summedata<-df %>% 
-  select(vorname,Kiez,year,anzahl)%>%
-  group_by(vorname,Kiez,year)%>%
-  mutate(summe=sum(anzahl))%>%
-  distinct(vorname,Kiez,year,summe)
-
-namedata<-summedata %>% 
-  filter(vorname == "Marie")
-
-
-
-#%>%
-  select(Kiez,year,anzahl)%>%
-  group_by(Kiez,year)%>%
-  mutate(summe=sum(anzahl))%>%
-  distinct(Kiez,year,summe)
+#calculate sum, total, percentage with year --> year not necessary for map!!
+# summedata<-df %>% 
+#   select(vorname,Kiez,year,anzahl)%>%
+#   group_by(vorname,Kiez,year)%>%
+#   mutate(summe=sum(anzahl))%>%
+#   distinct(vorname,Kiez,year,summe)%>%
+#   group_by(Kiez)%>%
+#   mutate(total=sum(summe))%>%
+#   mutate(percentage=round(((summe/total)*100),digits=2))%>%
+#   mutate(rank=round(rank(desc(summe))))
 
 
-
-#map calculation of percentages
-# first select only necessary columns, 
-# group by Kiez
-# insert variable with grouped sum of anzahl = total
-# insert variable with percentage calculated with ((anzahl/total)*100)
-p<-df %>% 
+# omit year
+final_df<-df %>% 
   select(vorname,Kiez,anzahl)%>%
+  group_by(vorname,Kiez)%>%
+  mutate(summe=sum(anzahl))%>%
+  distinct(vorname,Kiez,summe)%>%
   group_by(Kiez)%>%
-  mutate(total=sum(anzahl))%>%
-  mutate(percentage=round(((anzahl/total)*100),digits=2))%>%
-  mutate(rank=round(rank(desc(percentage))))
-p
+  mutate(total=sum(summe))%>%
+  mutate(percentage=round(((summe/total)*100),digits=2))%>%
+  mutate(rank=round(rank(desc(summe))))
 
+library(readr)
+final_df <- cbind(a = 0, final_df)
+names(final_df)
+write_excel_csv(final_df, "data/map_df.csv")
+  
+# finally filter name from "newdata"
+namedata<-final_df %>% 
+  filter(vorname == "Max")%>%
+  select(vorname,Kiez,summe,percentage,rank)
 

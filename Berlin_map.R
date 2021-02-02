@@ -14,7 +14,7 @@ library(maptools)
 
 
 # 1. set working directory
-setwd("D:/Dropbox/R_wissen/berlinnames")
+setwd("D:/Dropbox/R_wissen/berlin_names_spacial")
 #setwd("C:/Users/hanna/Dropbox/R_wissen/berlinnames")
 getwd()
 list.files()#
@@ -35,9 +35,10 @@ list.files(pattern='\\.shp$')
 file.exists('berliner_bezirke.shp')
 
 # see "Data visualization" by Kieran Healy p.177
-
+getwd()
 #load geodata = region outlines
 library(rgdal)
+setwd("data/map")
 berlin_spdf=readOGR(dsn= getwd(), layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
 # convert shp data into data frame - THIS STEP IS ESSENTIAL 
 #bm<-map_data(berlin_spdf)
@@ -69,6 +70,10 @@ levels(berlin_spdf@data$name)
 levels(berlin_spdf@data$name)[levels(berlin_spdf@data$name)=='Tempelhof-Schöneberg'] <- 'Tempelhof-Schoeneberg'
 levels(berlin_spdf@data$name)[levels(berlin_spdf@data$name)=='Neukölln'] <- 'Neukoelln'
 levels(berlin_spdf@data$name)[levels(berlin_spdf@data$name)=='Treptow-Köpenick'] <- 'Treptow-Koepenick'
+
+# save shapefile with new kiez name?
+writeOGR(obj=berlin_spdf, dsn="data/map2", layer="berliner_bezirke", driver="ESRI Shapefile") # this is in geographical projection
+berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
 
 #load data with frequency to join with spacial data. Filter, group and summarise first
 setwd("D:/Dropbox/R_wissen/berlin_names_spacial")
@@ -127,27 +132,44 @@ berlin +
 
 # https://learn.r-journalism.com/en/mapping/census_maps/census-maps/
 library(tigris)
+library(leaflet)
 # with tigris it is possible to join geodata with a dataframe
 #anzahlmap <- geo_join(berlin_spdf, kiezdata, "name", "Kiez")
-anzahlmap <- geo_join(berlin_spdf, p, "name", "Kiez")
+anzahlmap <- geo_join(berlin_spdf, namedata, "name", "Kiez")
+head(anzahlmap)
 
+library(dplyr)
+mariedata<-namedata%>% 
+  filter(vorname == "Marie")%>%
+  select(vorname,Kiez,summe,percentage,rank)
 
 pal <- colorNumeric("Greens", domain=anzahlmap$percentage)
-popup_sb <- paste0("Rank:", as.character(anzahlmap$rank),"Percentage:", as.character(anzahlmap$percentage),"Total: ", as.character(anzahlmap$anzahl))
+popup_sb <- paste0("<strong>",as.character(anzahlmap$vorname),"</strong>"," in ",as.character(anzahlmap$name),":<br><strong>Rank: </strong>", as.character(anzahlmap$rank),"<br /><strong>Percentage: </strong>", as.character(anzahlmap$percentage),"%","<strong><br />Total: </strong>", as.character(anzahlmap$summe))
 
 
-#library(leaflet)
+
 leaflet() %>%
-  addProviderTiles("CartoDB.Positron") %>%
-  setView(13.41053,52.52437, zoom = 10) %>% 
-  addPolygons(data = anzahlmap , 
+  #addProviderTiles("CartoDB.Positron") %>%
+  #setView(13.41053,52.52437, zoom = 10) %>% 
+  addPolygons(data = berlin_spdf , 
               fillColor = ~pal(anzahlmap$percentage), 
-              fillOpacity = 0.7, 
+              fillOpacity = 0.9, 
               weight = 0.2, 
               smoothFactor = 0.2, 
+              highlight = highlightOptions(
+                weight = 5,
+                color = "#666",
+                fillOpacity = 0.7,
+                bringToFront = TRUE),
               popup = ~popup_sb) %>%
   addLegend(pal = pal, 
             values = anzahlmap$percentage, 
             position = "bottomright", 
-            title = "Names")
+            title = "percentage %")
 
+ggplot(data=filteredFinal2(), mapping = aes(x=long,y=lat,group=group,fill=f))+
+  geom_polygon(color="grey90",size=0.1)+
+  coord_map(projection="albers",lat0=13,lat1=53)+
+  scale_fill_gradient2(low="#d3d3d3",
+                       mid=scales::muted("#767171"),
+                       high=rgb(0.1,0.7,0.1,0.8))

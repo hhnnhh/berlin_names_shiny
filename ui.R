@@ -92,8 +92,8 @@ tabPanel("Kiez Popularity", fluid = TRUE, icon = icon("globe"),
              
              # Show a plot of the generated distribution
              mainPanel(
-                 shinycssloaders::withSpinner((plotOutput("berlin")),color = getOption("spinner.color", default = "#D3D3D3")),
-                 tableOutput("berlix"),
+                 shinycssloaders::withSpinner((leafletOutput("berlin")),color = getOption("spinner.color", default = "#D3D3D3")),
+                 #tableOutput("berlix"),
                  tableOutput("berliy")
                  
              ))

@@ -39,7 +39,7 @@ shinyUI(fluidPage(
                                 #                    label = "Select Gender(s):",
                                 #                    choices = c("Male" = "m", "Female" = "w"),
                                 #                    selected = "w"),
-                                titlePanel("Frequency of Name by Kiez"),
+                                titlePanel("Popularity by Kiez"),
                                 
                                 helpText("You can choose a name from the selection or type a name of your choice."),
                                 selectInput("names2",

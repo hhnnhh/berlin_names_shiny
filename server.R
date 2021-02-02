@@ -18,6 +18,7 @@ library(shinycssloaders)# for spinner when waiting to load
 library(tigris)         # for geo_join (join spacial data with df)
 library(leaflet)        # for interactive map
 library(rgdal)          # for loading spacial data with readOGR
+library(wordcloud)
 
 
 # df <- read.csv("data/berlin.csv") # data for name trend and wordcloud
@@ -75,7 +76,12 @@ shinyServer(function(input, output) {
 
      #start Leaflet interactive map output
       output$berlin <- renderLeaflet({
-           input$select2 # wait for action button click before rendering map w/ isolate
+        
+        output$text2 <- renderText({
+          paste("<strong>",input$names2,"</strong>: Rank, percentage and total number for each Kiez in Berlin between 2012 and 2019.<br><strong>Click on Kiez!</strong>")
+        })
+        
+         input$select2 # wait for action button click before rendering map w/ isolate
            isolate(
 
          leaflet() %>%
@@ -99,6 +105,48 @@ shinyServer(function(input, output) {
           ) #close isolation
 
       }) # close leaflet output
+
+######### back end for "Frequent Names Cloud"
+      
+      filtered_kiez <- reactive({
+        df %>%
+          filter(Kiez == input$kiezId)
+      })
+      
+      filtered_gender <- reactive({
+        filtered_kiez() %>% 
+          filter(geschlecht == input$genderId)
+      })
+      
+      
+      filtered_year <- reactive({
+        if (input$yearId>2017){
+          filtered_gender() %>% 
+            filter(year == input$yearId & position == input$position)
+        }
+        else{    filtered_gender() %>% 
+            filter(year == input$yearId)}
+      })
+      
+      one_filtered <- reactive({
+        filtered_year() %>% 
+          filter(filtered_year()$anzahl == 1)
+      })
+      
+      fully_filtered <- eventReactive(input$select, {
+        filtered_year()
+      })
+      
+      output$plot <- renderPlot({
+        
+        output$text1 <- renderText({
+          paste("Selection of names that were most frequent in", input$yearId,"in", input$kiezId)
+        })
+        validate(
+          need(fully_filtered()$vorname, 'No names available for this selection.')
+        )
+        p<-wordcloud(words = fully_filtered()$vorname, freq = fully_filtered()$anzahl, colors=brewer.pal(8,"BrBG"),min.freq = 2, max.words=200, random.order=FALSE, rot.per=0.35,scale=c(3.5,0.25))
+      })
  
 ######### back end for "Name Trend tab"   
       

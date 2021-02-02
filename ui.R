@@ -11,12 +11,15 @@ library(shiny)
 library(shinythemes)
 library(rgdal)          # necessary for using readOGR
 library(leaflet)
+library(wordcloud)
 
 
 df <- read.csv("data/berlin.csv") # data for name trend and wordcloud
 map_df <- read.csv("data/map_df.csv") # data for rank,%,frequency in map
 berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
 
+min_year <- min(df$year)
+max_year <- max(df$year)
 
 button_color_css <- "
 #DivCompClear, #FinderClear, #EnterTimes{
@@ -35,40 +38,109 @@ shinyUI(fluidPage(
 
 ######### front end for "Kiez Popularity tab"  
 
-               tabPanel("Kiez Popularity", fluid = TRUE, icon = icon("globe"),
+               tabPanel("Kiez Personalities", fluid = TRUE, icon = icon("globe"),
                         tags$style(button_color_css),
 
                         sidebarLayout(
                             sidebarPanel(
-                                titlePanel("Popularity by Kiez"),
+                                titlePanel("Hot in the Hood?"),
+                                h4("Popularity of names by Kiez"),
 
                                 helpText("You can choose a name from the selection or type a name of your choice."),
                                 selectInput("names2",
                                             "First names:",
                                             choices=unique(df$vorname),
-                                            selected = NULL,
-                                            multiple = FALSE,
-                                            selectize = TRUE),
+                                            selected = "Mia",
+                                            #multiple = FALSE,
+                                            #selectize = TRUE
+                                            ),
 
 
                                 actionButton('select2', 'Select'),
                                 br(),
                                 br(),
-                                helpText("Click on each Kiez for more information!"),
+                                helpText("Select name and click on map for more information!"),
 
                             ),
 
                             # Show the final map (optional: results table)
                             mainPanel(
+                                htmlOutput("text2"), 
                                 shinycssloaders::withSpinner((leafletOutput("berlin")),color = getOption("spinner.color", default = "#D3D3D3"))#,
                                 #tableOutput("berliy") #if used, don't forget to put comma behind leafletOutput
 
                             ))
                ),
 
+######### front end for "Frequent names" tab
+
+                tabPanel("Popular Names", fluid = TRUE, icon = icon("cloud"),
+                    tags$style(button_color_css),
+
+                        sidebarLayout(
+                            sidebarPanel(
+                                titlePanel("Everybodys darling?"),
+                                h4("Frequency by Kiez, gender, year."),
+                                #helpText("Displaying frequency of first names in Berlin by Kiez, gender, and year. source: Berlin open data."),
+                                
+                                #width = 2,
+                                #selectInput(inputId="vorname", label="vorname", choices=unique(df$vorname), selected = NULL, multiple = FALSE),
+                                
+                                selectInput(
+                                    inputId = "kiezId",
+                                    label = "Kiez",
+                                    choices = unique(df$Kiez),
+                                    selected = "Charlottenburg-Wilmersdorf"
+                                ),
+                                
+                                helpText("Data only available for binary gender.."),
+                                selectInput(
+                                    inputId = "genderId",
+                                    label = "Gender",
+                                    choices = c("female"="w","male"="m"),
+                                    #choices = unique(df$geschlecht),
+                                    selected = "female"
+                                ),
+                                
+                                
+                                sliderInput(
+                                    inputId = "yearId",
+                                    label = "Year", min = min_year, max = max_year,
+                                    round = 2, 
+                                    step = 1,
+                                    sep = "",
+                                    value = 2018
+                                    
+                                    
+                                ),
+                                helpText("Position data only available since 2017"),
+                                conditionalPanel(condition="input.yearId>2016",
+                                                 selectInput(
+                                                     inputId = "position", 
+                                                     label = "Choose position of name:",
+                                                     choices = c("1","2","3","4","5","6","7"),
+                                                     selected ="1")
+                                ),
+                                
+                                br(), 
+                                
+                                actionButton('select', 'Select'),
+                                
+                            ),
+                            
+                            #check:
+                            # https://stackoverflow.com/questions/50800892/change-rendertable-title-in-shiny
+                            mainPanel(
+                                textOutput("text1"), plotOutput("plot"),
+                            )
+                        )
+                        
+                        ),
+    
+
 ######### front end for "Name Trend tab"
 
-               tabPanel("Name Trend", fluid = TRUE, icon = icon("wave-square"),
+               tabPanel("Trendy or not?", fluid = TRUE, icon = icon("wave-square"),
                         tags$style(button_color_css),
 
 
@@ -76,20 +148,20 @@ shinyUI(fluidPage(
     # Sidebar with drop down menu
     sidebarLayout(
         sidebarPanel(
+            titlePanel("Coming or going?"),
+            h4("Trend from 2012 to 2019"),
             
             # checkboxGroupInput(inputId = "GenderId",
             #                    label = "Select Gender(s):",
             #                    choices = c("Male" = "m", "Female" = "w"),
             #                    selected = "w"),
             
-            titlePanel("Trend from 2012 to 2019"),
-            
-            helpText("You can choose a name from the selection or type a name of your choice."),
+             helpText("You can choose a name from the selection or type a name of your choice."),
             
             selectInput("names",
                         "First names:",
                         choices=unique(df$vorname),
-                        selected = NULL,
+                        selected = "Wolke",
                         multiple = FALSE, 
                         selectize = TRUE),
         
@@ -104,6 +176,9 @@ shinyUI(fluidPage(
 
         ))
     ),
+
+
+
 
 ######### front end for "About me - tab"
 

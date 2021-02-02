@@ -8,6 +8,11 @@ m<-df %>%
   summarise(s=sum(anzahl))
 m
 
+
+
+
+
+
 if (df$vorname="Max"){
 aggregate(df$anzahl, by=list(df$year), FUN=mean)}
 
@@ -26,5 +31,57 @@ data$year <- as.Date(data$year)
 plot(data$anzahl~data$year, type="b" , lwd=3 , col=rgb(0.1,0.7,0.1,0.8) , ylab="frequency per year" , xlab="date" , bty="l" , pch=20 , cex=4)
 abline(h=seq(0,100,10) , col="grey", lwd=0.8)
 
+library(dplyr)
+
+df$position <-NULL
+df$geschlecht <-NULL
+
+ # kiezdata<-df %>% 
+ #     filter(vorname == "Marie")%>%
+ #     select(Kiez,year,anzahl)%>%
+ #     group_by(Kiez,year)%>%
+ #     mutate(summe=sum(anzahl))%>%
+ #   distinct(Kiez,year,summe)
+    
+
+# p<-df %>% 
+#   select(vorname,Kiez,anzahl)%>%
+#   group_by(Kiez)%>%
+#   mutate(total=sum(anzahl))%>%
+#   mutate(percentage=round(((anzahl/total)*100),digits=2))%>%
+#   mutate(rank=round(rank(desc(percentage))))
+# p
+
+summedata<-df %>% 
+  select(vorname,Kiez,year,anzahl)%>%
+  group_by(vorname,Kiez,year)%>%
+  mutate(summe=sum(anzahl))%>%
+  distinct(vorname,Kiez,year,summe)
+
+namedata<-summedata %>% 
+  filter(vorname == "Marie")
+
+
+
+#%>%
+  select(Kiez,year,anzahl)%>%
+  group_by(Kiez,year)%>%
+  mutate(summe=sum(anzahl))%>%
+  distinct(Kiez,year,summe)
+
+
+
+#map calculation of percentages
+# first select only necessary columns, 
+# group by Kiez
+# insert variable with grouped sum of anzahl = total
+# insert variable with percentage calculated with ((anzahl/total)*100)
+p<-df %>% 
+  select(vorname,Kiez,anzahl)%>%
+  group_by(Kiez)%>%
+  mutate(total=sum(anzahl))%>%
+  mutate(percentage=round(((anzahl/total)*100),digits=2))%>%
+  mutate(rank=round(rank(desc(percentage))))
+p
 
 

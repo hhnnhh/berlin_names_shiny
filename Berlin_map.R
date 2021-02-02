@@ -128,23 +128,26 @@ berlin +
 # https://learn.r-journalism.com/en/mapping/census_maps/census-maps/
 library(tigris)
 # with tigris it is possible to join geodata with a dataframe
-anzahlmap <- geo_join(berlin_spdf, kiezdata, "name", "Kiez")
-
-pal <- colorNumeric("Greens", domain=anzahlmap$s)
-popup_sb <- paste0("Total: ", as.character(anzahlmap$s))
+#anzahlmap <- geo_join(berlin_spdf, kiezdata, "name", "Kiez")
+anzahlmap <- geo_join(berlin_spdf, p, "name", "Kiez")
 
 
-library(leaflet)
+pal <- colorNumeric("Greens", domain=anzahlmap$percentage)
+popup_sb <- paste0("Rank:", as.character(anzahlmap$rank),"Percentage:", as.character(anzahlmap$percentage),"Total: ", as.character(anzahlmap$anzahl))
+
+
+#library(leaflet)
 leaflet() %>%
   addProviderTiles("CartoDB.Positron") %>%
   setView(13.41053,52.52437, zoom = 10) %>% 
   addPolygons(data = anzahlmap , 
-              fillColor = ~pal(anzahlmap$s), 
+              fillColor = ~pal(anzahlmap$percentage), 
               fillOpacity = 0.7, 
               weight = 0.2, 
               smoothFactor = 0.2, 
               popup = ~popup_sb) %>%
   addLegend(pal = pal, 
-            values = anzahlmap$s, 
+            values = anzahlmap$percentage, 
             position = "bottomright", 
             title = "Names")
+

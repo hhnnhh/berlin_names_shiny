@@ -9,17 +9,11 @@
 
 library(shiny)
 library(shinythemes)
-library(rgdal)          # necessary for using readOGR
+#library(rgdal)          # necessary for using readOGR
 library(leaflet)
 library(wordcloud)
 
 
-df <- read.csv("data/berlin.csv") # data for name trend and wordcloud
-map_df <- read.csv("data/map_df.csv") # data for rank,%,frequency in map
-berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
-
-min_year <- min(df$year)
-max_year <- max(df$year)
 
 button_color_css <- "
 #DivCompClear, #FinderClear, #EnterTimes{
@@ -60,11 +54,13 @@ shinyUI(fluidPage(
                                 br(),
                                 br(),
                                 helpText("Select name and click on map for more information!"),
-
+#),
+                               # plotOutput("plot", height = 200),
                             ),
 
                             # Show the final map (optional: results table)
                             mainPanel(
+                                
                                 htmlOutput("text2"), 
                                 shinycssloaders::withSpinner((leafletOutput("berlin")),color = getOption("spinner.color", default = "#D3D3D3"))#,
                                 #tableOutput("berliy") #if used, don't forget to put comma behind leafletOutput
@@ -138,47 +134,47 @@ shinyUI(fluidPage(
                         ),
     
 
-######### front end for "Name Trend tab"
-
-               tabPanel("Trendy or not?", fluid = TRUE, icon = icon("wave-square"),
-                        tags$style(button_color_css),
-
-
-    # Application title
-    # Sidebar with drop down menu
-    sidebarLayout(
-        sidebarPanel(
-            titlePanel("Coming or going?"),
-            h4("Trend from 2012 to 2019"),
-            
-            # checkboxGroupInput(inputId = "GenderId",
-            #                    label = "Select Gender(s):",
-            #                    choices = c("Male" = "m", "Female" = "w"),
-            #                    selected = "w"),
-            
-             helpText("You can choose a name from the selection or type a name of your choice."),
-            
-            selectInput("names",
-                        "First names:",
-                        choices=unique(df$vorname),
-                        selected = "Wolke",
-                        multiple = FALSE, 
-                        selectize = TRUE),
-        
-            
-            actionButton('select', 'Select'),
-            
-            ),
-
-        # Show a line graph with name trend
-        mainPanel(
-            plotOutput("distPlot"),
-
-        ))
-    ),
-
-
-
+# ######### front end for "Name Trend tab"
+# 
+#                tabPanel("Trendy or not?", fluid = TRUE, icon = icon("wave-square"),
+#                         tags$style(button_color_css),
+# 
+# 
+#     # Application title
+#     # Sidebar with drop down menu
+#     sidebarLayout(
+#         sidebarPanel(
+#             titlePanel("Coming or going?"),
+#             h4("Trend from 2012 to 2019"),
+#             
+#             # checkboxGroupInput(inputId = "GenderId",
+#             #                    label = "Select Gender(s):",
+#             #                    choices = c("Male" = "m", "Female" = "w"),
+#             #                    selected = "w"),
+#             
+#              helpText("You can choose a name from the selection or type a name of your choice."),
+#             
+#             selectInput("names",
+#                         "First names:",
+#                         choices=unique(df$vorname),
+#                         selected = "Wolke",
+#                         multiple = FALSE, 
+#                         selectize = TRUE),
+#         
+#             
+#             actionButton('select', 'Select'),
+#             
+#             ),
+# 
+#         # Show a line graph with name trend
+#         mainPanel(
+#             plotOutput("distPlot"),
+# 
+#         ))
+#     ),
+# 
+# 
+# 
 
 ######### front end for "About me - tab"
 

@@ -17,28 +17,41 @@ library(shinycssloaders)  # for spinner when waiting to load
 #options(tigris_use_cache = TRUE)
 library(tigris)           # for geo_join (join spacial data with df)
 library(leaflet)          # for interactive map
-#library(rgdal)           # for loading spacial data with readOGR
+library(rgdal)           # for loading spacial data with readOGR
 library(RColorBrewer)     # nice wordcloud color
 library(wordcloud)        # make wordcloud
+#library(profvis)
+library(data.table)
 
 
-# df <- read.csv("data/berlin.csv") # data for name trend and wordcloud
-# map_df <- read.csv("data/map_df.csv") # data for rank,%,frequency in map
+
+# frequencies and names from Berlin Open Data
 # map data with polygons from https://github.com/funkeinteraktiv/Berlin-Geodaten
-# df <- read.csv("data/berlin.csv") # data for name trend and wordcloud
-# map_df <- read.csv("data/map_df.csv") # data for rank,%,frequency in map
-# berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
-# 
-# 
 
+  df <- readRDS("data/finaldf.rds")
+ # #df <- read.csv("data/marie.csv")
+  berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
 
-
+ bmap<- leaflet() %>%
+   setView(13.41053,52.52437, zoom = 10)%>%
+   addPolygons(data = berlin_spdf,
+               fillColor = "#CBECCB",
+               fillOpacity = 0.9,
+               weight = 0.2,
+               smoothFactor = 0.2)
+ 
+ 
 shinyServer(function(input, output, session) {
+  
+  if(is.null(df)){
+    readData(session, berlin_spdf, df)
+  }
   
 
 
 ######### back end for "Kiez popularity tab" 
   
+  #render template of map before calling reactive function (global.R)
   output$berlin <- renderLeaflet(bmap)
   
   # #start Leaflet interactive map output
@@ -59,15 +72,24 @@ shinyServer(function(input, output, session) {
   # 
   #     
   # }) # close leaflet output
-  
-  observeEvent(input$select2, {
+  updateSelectizeInput(session, "names2",  choices = unique(df$vorname), server = TRUE)
+ # observeEvent(input$select2, {
+    observe({
+   
+    # filtered_gender <- reactive({
+    #   df %>% 
+    #     filter(geschlecht == input$genderId)
+    # })
+    # 
   # filter by name input and select some columns
         filteredName2 <- reactive({
-         map_df %>%
-           filter(vorname == input$names2)%>%
-           select(vorname,Kiez,summe,percentage,rank)
+         df %>%
+           filter(vorname == input$names2)#%>%
+         # select(vorname,Kiez,summe,percentage,rank) 
+           
      })
 
+        
   # join filtered data set with spacial data
      filteredFinal2 <- eventReactive(input$select2, {
        geo_join(berlin_spdf, filteredName2(), "name", "Kiez")
@@ -110,7 +132,7 @@ shinyServer(function(input, output, session) {
 
          
           output$text2 <- renderText({
-            paste("<strong>",input$names2,"</strong>: Rank, percentage and total number for each Kiez in Berlin between 2012 and 2019.<br><strong>Click on Kiez!</strong>")
+            paste("<strong>",input$names2,"</strong>: Rank, percentage and total number for each Kiez in Berlin between 2012 and 2019.")
           })
      
      leafletProxy("berlin", session) %>%

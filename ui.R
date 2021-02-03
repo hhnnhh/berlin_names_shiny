@@ -9,9 +9,31 @@
 
 library(shiny)
 library(shinythemes)
-#library(rgdal)          # necessary for using readOGR
+library(rgdal)          # necessary for using readOGR
 library(leaflet)
 library(wordcloud)
+library(data.table)
+
+df <- NULL
+berlin_spdf <- NULL
+
+readData <- function(session, df, berlin_spdf) {
+  progress <- Progress$new(session)
+  progress$set(value = 0, message = 'Loading...')
+  berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
+  progress$set(value = 0.5, message = 'Loading...')
+  df <- readRDS("data/finaldf.rds")
+  progress$set(value = 1, message = 'Loading...')
+  progress$close()
+}
+berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
+
+#df <- readRDS("data/finaldf.rds")
+#df <- read.csv("data/final_df.csv")
+
+min_year <- 2012 #min(df$year)
+max_year <- 2019 #max(df$year)
+
 
 
 
@@ -41,19 +63,20 @@ shinyUI(fluidPage(
                                 h4("Popularity of names by Kiez"),
 
                                 helpText("You can choose a name from the selection or type a name of your choice."),
-                                selectInput("names2",
+                                
+                                selectizeInput("names2",
                                             "First names:",
-                                            choices=unique(df$vorname),
-                                            selected = "Mia",
+                                            choices=c(Choose = '', unique(df$vorname)),
+                                            selected = NULL,
                                             #multiple = FALSE,
                                             #selectize = TRUE
                                             ),
-
+                                
 
                                 actionButton('select2', 'Select'),
                                 br(),
                                 br(),
-                                helpText("Select name and click on map for more information!"),
+                                h5("Select name and click on map for more information!"),
 #),
                                # plotOutput("plot", height = 200),
                             ),

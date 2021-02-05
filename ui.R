@@ -14,25 +14,13 @@ library(leaflet)
 library(wordcloud)
 library(data.table)
 
-df <- NULL
-berlin_spdf <- NULL
 
-readData <- function(session, df, berlin_spdf) {
-  progress <- Progress$new(session)
-  progress$set(value = 0, message = 'Loading...')
-  berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
-  progress$set(value = 0.5, message = 'Loading...')
-  df <- readRDS("data/finaldf.rds")
-  progress$set(value = 1, message = 'Loading...')
-  progress$close()
-}
-berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
 
+#berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
 #df <- readRDS("data/finaldf.rds")
 #df <- read.csv("data/final_df.csv")
 
-min_year <- 2012 #min(df$year)
-max_year <- 2019 #max(df$year)
+
 
 
 
@@ -48,7 +36,7 @@ font-size: 15px;
 }"
 
 # Define UI for application 
-shinyUI(fluidPage(
+ui <- fluidPage(
 
     navbarPage("Berlin Names", theme = shinytheme("lumen"),
 
@@ -105,11 +93,11 @@ shinyUI(fluidPage(
                                 #width = 2,
                                 #selectInput(inputId="vorname", label="vorname", choices=unique(df$vorname), selected = NULL, multiple = FALSE),
                                 
-                                selectInput(
+                                selectizeInput(
                                     inputId = "kiezId",
                                     label = "Kiez",
-                                    choices = unique(df$Kiez),
-                                    selected = "Charlottenburg-Wilmersdorf"
+                                    choices = c(Choose = '', unique(df$Kiez))#,
+                                    #selected = NULL,
                                 ),
                                 
                                 helpText("Data only available for binary gender.."),
@@ -220,4 +208,4 @@ tabPanel("About", fluid = TRUE,
 
 )))
 
-))
+)#)

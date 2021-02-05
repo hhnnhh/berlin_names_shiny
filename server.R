@@ -8,7 +8,9 @@
 #
 #     Example:
 #     https://gpilgrim.shinyapps.io/SwimmingProject-Click/?_ga=2.59410990.242922474.1612026216-878511382.1609948441
-#
+# 
+#     useful tip for long loading time issue
+#     https://github.com/rstudio/shiny-server/issues/456
 
 
 library(shiny)            # for web app
@@ -28,26 +30,37 @@ library(data.table)
 # frequencies and names from Berlin Open Data
 # map data with polygons from https://github.com/funkeinteraktiv/Berlin-Geodaten
 
-  df <- readRDS("data/finaldf.rds")
- # #df <- read.csv("data/marie.csv")
-  berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
+  # df <- readRDS("data/finaldf.rds")
+  # berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
+#df<-NULL
+#berlin_spdf <- NULL
 
- bmap<- leaflet() %>%
-   setView(13.41053,52.52437, zoom = 10)%>%
-   addPolygons(data = berlin_spdf,
-               fillColor = "#CBECCB",
-               fillOpacity = 0.9,
-               weight = 0.2,
-               smoothFactor = 0.2)
+# readData <- function(session, df, berlin_spdf) {
+#   progress <- Progress$new(session)
+#   progress$set(value = 0, message = 'Loading...')
+#   df <<- readRDS("data/finaldf.rds")
+#   progress$set(value = 0.5, message = 'Loading...')
+#   berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
+#   progress$set(value = 1, message = 'Loading...')
+#   progress$close()
+# }
  
  
-shinyServer(function(input, output, session) {
-  
+server <- function(input, output, session) {
+
+  #ShinyServer(function(input, output, session) {
+
   if(is.null(df)){
-    readData(session, berlin_spdf, df)
+    readData(session,  berlin_spdf,df)
   }
   
-
+  bmap<- leaflet() %>%
+    setView(13.41053,52.52437, zoom = 10)%>%
+    addPolygons(data = berlin_spdf,
+                fillColor = "#CBECCB",
+                fillOpacity = 0.9,
+                weight = 0.2,
+                smoothFactor = 0.2)
 
 ######### back end for "Kiez popularity tab" 
   
@@ -168,6 +181,8 @@ shinyServer(function(input, output, session) {
 
 
 ######### back end for "Frequent Names Cloud"
+    
+    updateSelectizeInput(session, "kiezId",  choices = unique(df$Kiez), server = TRUE)
       
       filtered_kiez <- reactive({
         df %>%
@@ -238,4 +253,4 @@ shinyServer(function(input, output, session) {
 #         abline(h=seq(0,100,10) , col="grey", lwd=0.8)
 #       }) # close render plot
 
-}) # close reactive server instance
+}#) # close reactive server instance

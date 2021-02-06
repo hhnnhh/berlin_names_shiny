@@ -2,6 +2,12 @@
 library(data.table)
 library(rgdal)
 
+# slow app? 
+# https://github.com/rstudio/shiny-server/issues/456
+
+## progress bar source: 
+#https://www.mazsoft.com/blog/post/2018/01/01/show-progress-bar-when-pre-loading-data-in-shiny-app
+
 df<-NULL
 berlin_spdf <- NULL
 

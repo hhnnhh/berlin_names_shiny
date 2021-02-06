@@ -1,4 +1,4 @@
-#
+
 # This is the server logic of a Shiny web application. You can run the
 # application by clicking 'Run App' above.
 #
@@ -19,32 +19,22 @@ library(shinycssloaders)  # for spinner when waiting to load
 #options(tigris_use_cache = TRUE)
 library(tigris)           # for geo_join (join spacial data with df)
 library(leaflet)          # for interactive map
-library(rgdal)           # for loading spacial data with readOGR
+library(rgdal)            # for loading spacial data with readOGR
 library(RColorBrewer)     # nice wordcloud color
 library(wordcloud)        # make wordcloud
-#library(profvis)
-library(data.table)
+#library(profvis)         # for checking performance of app
+library(data.table)       # loading data with progress bar
+
+
 
 
 
 # frequencies and names from Berlin Open Data
 # map data with polygons from https://github.com/funkeinteraktiv/Berlin-Geodaten
+# loading data without progress bar: 
+# df <- readRDS("data/finaldf.rds")
+# berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
 
-  # df <- readRDS("data/finaldf.rds")
-  # berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
-#df<-NULL
-#berlin_spdf <- NULL
-
-# readData <- function(session, df, berlin_spdf) {
-#   progress <- Progress$new(session)
-#   progress$set(value = 0, message = 'Loading...')
-#   df <<- readRDS("data/finaldf.rds")
-#   progress$set(value = 0.5, message = 'Loading...')
-#   berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
-#   progress$set(value = 1, message = 'Loading...')
-#   progress$close()
-# }
- 
  
 server <- function(input, output, session) {
 
@@ -66,34 +56,12 @@ server <- function(input, output, session) {
   
   #render template of map before calling reactive function (global.R)
   output$berlin <- renderLeaflet(bmap)
-  
-  # #start Leaflet interactive map output
-  # output$berlin <- renderLeaflet({
-  # 
-  #     leaflet() %>%
-  #       setView(13.41053,52.52437, zoom = 10)%>%
-  #       addPolygons(data = berlin_spdf,
-  #                   fillColor = "#CBECCB",
-  #                   fillOpacity = 0.9,
-  #                   weight = 0.2,
-  #                   smoothFactor = 0.2)
-  #                   # highlight = highlightOptions(
-  #                   #   weight = 5,
-  #                   #   color = "#666",
-  #                   #   fillOpacity = 0.7,
-  #                   #   bringToFront = TRUE)) 
-  # 
-  #     
-  # }) # close leaflet output
+
+# large number of options slow down app. --> save on server!
+# https://stackoverflow.com/questions/38438920/shiny-selectinput-very-slow-on-larger-data-15-000-entries-in-browser
   updateSelectizeInput(session, "names2",  choices = unique(df$vorname), server = TRUE)
- # observeEvent(input$select2, {
     observe({
    
-    # filtered_gender <- reactive({
-    #   df %>% 
-    #     filter(geschlecht == input$genderId)
-    # })
-    # 
   # filter by name input and select some columns
         filteredName2 <- reactive({
          df %>%
@@ -101,6 +69,21 @@ server <- function(input, output, session) {
          # select(vorname,Kiez,summe,percentage,rank) 
            
      })
+        
+        #### Trend plot small below select button 
+        
+        # group remaining data by year and sum total number of names
+        filteredYear <- reactive({
+          filteredName2() %>%
+            group_by(year)%>%
+            mutate(s=sum(anzahl))
+        })
+        
+        # # final output data
+        # filteredFinal <- reactive({
+        #   filteredYear()
+        # })
+        
 
         
   # join filtered data set with spacial data
@@ -110,13 +93,6 @@ server <- function(input, output, session) {
      })
      
 
-     
-    # observe({
-       
-       
-       
-
-       
        popup_sb <- input$names2
        pal <- input$names2 
        
@@ -140,14 +116,15 @@ server <- function(input, output, session) {
        )
      })
      
-
+# Text will help explain what user is seeing 
      
-
-         
           output$text2 <- renderText({
             paste("<strong>",input$names2,"</strong>: Rank, percentage and total number for each Kiez in Berlin between 2012 and 2019.")
           })
-     
+
+# these are only the parts of the map that vary with reactive content
+# main part of the map is rendered in global.R 
+          
      leafletProxy("berlin", session) %>%
        clearControls() %>%
        clearShapes() %>%
@@ -167,13 +144,21 @@ server <- function(input, output, session) {
                  position = "bottomright",
                  title = "rank")
 
-       
+     # output$view <- renderTable({
+     #   filteredYear()$s
+     # })
+     
+     # plot output --> line graph
+     output$trend <- renderPlot({
+     plot(filteredYear()$s~filteredYear()$year, type="b" ,  lwd=2 , col=rgb(0.1,0.7,0.1,0.8) , ylab="total names per year" , xlab="year" ,lty=1, bty="l" , pch=20 , cex=2)
+     }) # close render plot
+     
      }) #close observe function
-     
+
+
 
      
-
-    #display table data for debugging
+#display table data --> helpful for debugging purposes
        # output$berliy <- renderTable({
        #   filteredFinal2()
        # })
@@ -223,6 +208,7 @@ server <- function(input, output, session) {
         )
         p<-wordcloud(words = fully_filtered()$vorname, freq = fully_filtered()$anzahl, colors=brewer.pal(8,"BrBG"),min.freq = 2, max.words=200, random.order=FALSE, rot.per=0.35,scale=c(3.5,0.25))
       }) # close output$plot
+      
  
 # ######### back end for "Name Trend tab"   
 #       

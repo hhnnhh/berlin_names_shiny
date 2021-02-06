@@ -14,15 +14,17 @@ library(leaflet)
 library(wordcloud)
 library(data.table)
 
+# customizing style with shinythemes, but also PLOTS!
+# https://talks.cpsievert.me/20200715/#26
+library(bslib)
+theme = shinythemes::shinytheme("lumen")
+shinyOptions(bslib = TRUE)
+bs_global_theme()
+thematic::thematic_shiny(font = "auto")
 
 
 #berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
 #df <- readRDS("data/finaldf.rds")
-#df <- read.csv("data/final_df.csv")
-
-
-
-
 
 
 button_color_css <- "
@@ -36,11 +38,12 @@ font-size: 15px;
 }"
 
 # Define UI for application 
-ui <- fluidPage(
-
-    navbarPage("Berlin Names", theme = shinytheme("lumen"),
+ui <- fluidPage( 
+  
+    navbarPage("Berlin Names", theme = theme, #theme = shinytheme("lumen"),
 
 ######### front end for "Kiez Popularity tab"  
+    
 
                tabPanel("Kiez Personalities", fluid = TRUE, icon = icon("globe"),
                         tags$style(button_color_css),
@@ -66,7 +69,9 @@ ui <- fluidPage(
                                 br(),
                                 h5("Select name and click on map for more information!"),
 #),
-                               # plotOutput("plot", height = 200),
+                                plotOutput("trend", height = 250)
+                                #tableOutput("view")
+
                             ),
 
                             # Show the final map (optional: results table)
@@ -138,7 +143,7 @@ ui <- fluidPage(
                             #check:
                             # https://stackoverflow.com/questions/50800892/change-rendertable-title-in-shiny
                             mainPanel(
-                                textOutput("text1"), plotOutput("plot"),
+                                textOutput("text1"), plotOutput("plot",height = 700),
                             )
                         )
                         
@@ -209,3 +214,4 @@ tabPanel("About", fluid = TRUE,
 )))
 
 )#)
+

@@ -7,20 +7,21 @@
 #    http://shiny.rstudio.com/
 #
 
-library(shiny)
-library(shinythemes)
+library(shiny)          # for shiny app 
+library(shinythemes)    # make it beautiful with theme "lumen"
 library(rgdal)          # necessary for using readOGR
-library(leaflet)
-library(wordcloud)
-library(data.table)
-
-# customizing style with shinythemes, but also PLOTS!
-# https://talks.cpsievert.me/20200715/#26
-library(bslib)
-theme = shinythemes::shinytheme("lumen")
+library(leaflet)        # necessary for building map
+library(wordcloud)      # necessary for wordcloud
+library(data.table)     # loading data with progress bar
+library(bslib)          # customizing style with shinythemes, make css info available for PLOTS!
+theme = shinythemes::shinytheme("lumen") # see also: https://talks.cpsievert.me/20200715/#26
 shinyOptions(bslib = TRUE)
 bs_global_theme()
 thematic::thematic_shiny(font = "auto")
+
+thematic_on(
+  font = "auto"
+)
 
 
 #berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
@@ -143,12 +144,50 @@ ui <- fluidPage(
                             #check:
                             # https://stackoverflow.com/questions/50800892/change-rendertable-title-in-shiny
                             mainPanel(
-                                textOutput("text1"), plotOutput("plot",height = 700),
+                              #textOutput("text1"), wordcloud2Output("plot", width = "50%", height = "700px"),  
+                              textOutput("text1"), plotOutput("plot",height = 700)
                             )
                         )
                         
                         ),
     
+
+# tabPanel("the one and only?", fluid = TRUE, icon = icon("wave-square"),
+#                                   tags$style(button_color_css),
+#          
+#              # Application title
+#              # Sidebar with drop down menu
+#              sidebarLayout(
+#                  sidebarPanel(
+#                      titlePanel("one and only?"),
+#                      h4("Unique names"),
+# 
+#                       helpText("choose a year"),
+# 
+#                      sliderInput(
+#                        inputId = "yearid2",
+#                        label = "Year", min = min_year, max = max_year,
+#                        round = 2, 
+#                        step = 1,
+#                        sep = "",
+#                        value = 2018
+#                        
+#                        
+#                      ),
+# 
+# 
+#                      actionButton('select3', 'Select'),
+# 
+#                      ),
+# 
+#                  # Show a line graph with name trend
+#                  mainPanel(
+#                    textOutput("text2"),htmlOutput("r")
+#                    #shinycssloaders::withSpinner((leafletOutput("berlin2")),color = getOption("spinner.color", default = "#D3D3D3"))#,
+#                    
+#                  ))
+#              ),
+         
 
 # ######### front end for "Name Trend tab"
 # 
@@ -205,7 +244,7 @@ tabPanel("About", fluid = TRUE,
                     h5(p("The project began as an attempt to combine my interest in names with the intention to practice R, a programming language used primarily for analyzing and reporting data.  It has two components.  The first is this app, which queries a dataset to return information in the form of plots, data tables etc.  The second is the dataset itself, which I assembled by tying together information from the sources below. The dataset was provided by", a("Berlin Open Data", href = "https://daten.berlin.de/tags/vornamen"),".")),
                     br(),
                     h5(p("I hope you find it interesting and/or useful.  Any comments or questions are welcome at info-at-hannahbohle-dot-de."),
-                       p("The source code for this Shiny app is available ", a("on github", href = "https://github.com/hhnnhh"), "."))
+                       p("The source code for this Shiny app is available on", a("github", href = "https://github.com/hhnnhh/berlin_names_shiny"), "."))
                     
                     #hr(),
                     

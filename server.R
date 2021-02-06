@@ -24,8 +24,8 @@ library(RColorBrewer)     # nice wordcloud color
 library(wordcloud)        # make wordcloud
 #library(profvis)         # for checking performance of app
 library(data.table)       # loading data with progress bar
-
-
+#devtools::install_github("lchiffon/wordcloud2")
+#library(wordcloud2)
 
 
 
@@ -207,10 +207,48 @@ server <- function(input, output, session) {
           need(fully_filtered()$vorname, 'No names available for this selection.')
         )
         p<-wordcloud(words = fully_filtered()$vorname, freq = fully_filtered()$anzahl, colors=brewer.pal(8,"BrBG"),min.freq = 2, max.words=200, random.order=FALSE, rot.per=0.35,scale=c(3.5,0.25))
-      }) # close output$plot
+        #renderWordcloud2(wordcloud2(data = fully_filtered()$vorname,colors=brewer.pal(8,"BrBG")))
+        }) # close output$plot
       
- 
-# ######### back end for "Name Trend tab"   
+      
+######### unique names map
+      # 
+      # one_filtered <- reactive({
+      #   df %>%
+      #     filter(df$anzahl == 1) %>%
+      #     select(year,Kiez,vorname)
+      # })
+      # 
+      # filteredyear<- reactive({
+      #    one_filtered() %>% 
+      #     filter(year == input$yearid2)
+      # 
+      # })
+      # 
+      # unique_final <- eventReactive(input$select3, {
+      #   geo_join(berlin_spdf, filteredyear(), "name", "Kiez")
+      #   
+      # })
+      # 
+      # # output$berlin2 <- renderLeaflet(bmap)
+      # # leafletProxy("berlin2", session)# %>%
+      # # addTiles()# %>%
+      # #   addLabelOnlyMarkers(~long, ~lat, label = ~as.character(unique_final()$name),
+      #                       #labelOptions = labelOptions(noHide = T, direction = 'top', textOnly = T))
+      # 
+      # output$r <-renderUI({
+      #     validate(
+      #         need(filteredyear()$vorname, 'No names available for this selection.')
+      #             )
+      # 
+      #   output$text2 <- renderText({
+      #             paste("Selection of names that were unique in", input$yearid2)
+      #                             })
+      #           HTML(as.character(sample(filteredyear()$vorname,5), sep="<br/>"))
+                                # })
+
+      
+      # ######### back end for "Name Trend tab"   
 #       
 #     # filter by name
 #       filteredName <- reactive({

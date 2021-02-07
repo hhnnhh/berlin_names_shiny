@@ -19,9 +19,9 @@ shinyOptions(bslib = TRUE)
 bs_global_theme()
 thematic::thematic_shiny(font = "auto")
 
-thematic_on(
-  font = "auto"
-)
+ # thematic_on(
+ #   font = "auto"
+ # )
 
 
 #berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
@@ -93,7 +93,8 @@ ui <- fluidPage(
                         sidebarLayout(
                             sidebarPanel(
                                 titlePanel("Everybodys darling?"),
-                                h4("Frequency by Kiez, gender, year."),
+                                h4("Frequency by kiez, gender, year."),
+                                
                                 #helpText("Displaying frequency of first names in Berlin by Kiez, gender, and year. source: Berlin open data."),
                                 
                                 #width = 2,
@@ -138,7 +139,7 @@ ui <- fluidPage(
                                 br(), 
                                 
                                 actionButton('select', 'Select'),
-                                
+                                h5("Bigger names were more frequent."),
                             ),
                             
                             #check:
@@ -152,41 +153,44 @@ ui <- fluidPage(
                         ),
     
 
-# tabPanel("the one and only?", fluid = TRUE, icon = icon("wave-square"),
-#                                   tags$style(button_color_css),
-#          
-#              # Application title
-#              # Sidebar with drop down menu
-#              sidebarLayout(
-#                  sidebarPanel(
-#                      titlePanel("one and only?"),
-#                      h4("Unique names"),
-# 
-#                       helpText("choose a year"),
-# 
-#                      sliderInput(
-#                        inputId = "yearid2",
-#                        label = "Year", min = min_year, max = max_year,
-#                        round = 2, 
-#                        step = 1,
-#                        sep = "",
-#                        value = 2018
-#                        
-#                        
-#                      ),
-# 
-# 
-#                      actionButton('select3', 'Select'),
-# 
-#                      ),
-# 
-#                  # Show a line graph with name trend
-#                  mainPanel(
-#                    textOutput("text2"),htmlOutput("r")
-#                    #shinycssloaders::withSpinner((leafletOutput("berlin2")),color = getOption("spinner.color", default = "#D3D3D3"))#,
-#                    
-#                  ))
-#              ),
+tabPanel("the one and only?", fluid = TRUE, icon = icon("wave-square"),
+                                  tags$style(button_color_css),
+
+             # Application title
+             # Sidebar with drop down menu
+             sidebarLayout(
+                 sidebarPanel(
+                     titlePanel("The one and only?"),
+                     h4("Selection of names that were given only once in Berlin."),
+
+                      helpText("choose a year"),
+
+                     sliderInput(
+                       inputId = "yearid2",
+                       label = "Year", min = min_year, max = max_year,
+                       round = 2,
+                       step = 1,
+                       sep = "",
+                       value = 2018
+
+
+                     ),
+
+
+                     #actionButton('select3', 'Select'),
+                     br(),
+                     actionButton('refresh', 'select & refresh'),
+
+                     ),
+
+                 # Show a line graph with name trend
+                 mainPanel(
+
+                   #textOutput("text2"),htmlOutput("r")
+                   shinycssloaders::withSpinner((leafletOutput("berlin2")),color = getOption("spinner.color", default = "#D3D3D3")),
+                   #tableOutput("berliy")
+                 ))
+             ),
          
 
 # ######### front end for "Name Trend tab"

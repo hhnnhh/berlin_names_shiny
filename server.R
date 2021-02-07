@@ -26,6 +26,7 @@ library(wordcloud)        # make wordcloud
 library(data.table)       # loading data with progress bar
 #devtools::install_github("lchiffon/wordcloud2")
 #library(wordcloud2)
+library(splitstackshape)  # drawing random samples, with one "vorname" for each Kiez ("unique name map")
 
 
 
@@ -34,6 +35,7 @@ library(data.table)       # loading data with progress bar
 # loading data without progress bar: 
 # df <- readRDS("data/finaldf.rds")
 # berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
+
 
  
 server <- function(input, output, session) {
@@ -56,6 +58,7 @@ server <- function(input, output, session) {
   
   #render template of map before calling reactive function (global.R)
   output$berlin <- renderLeaflet(bmap)
+  output$berlin2 <- renderLeaflet(bmap)
 
 # large number of options slow down app. --> save on server!
 # https://stackoverflow.com/questions/38438920/shiny-selectinput-very-slow-on-larger-data-15-000-entries-in-browser
@@ -123,7 +126,7 @@ server <- function(input, output, session) {
           })
 
 # these are only the parts of the map that vary with reactive content
-# main part of the map is rendered in global.R 
+# main part / template of the map ("bmap") is rendered at the beginning of server.R
           
      leafletProxy("berlin", session) %>%
        clearControls() %>%
@@ -201,7 +204,7 @@ server <- function(input, output, session) {
       output$plot <- renderPlot({
         
         output$text1 <- renderText({
-          paste("Selection of names that were most frequent in", input$yearId,"in", input$kiezId)
+          paste("Selection of names that were most frequent in", input$yearId,"in", input$kiezId,".")
         })
         validate(
           need(fully_filtered()$vorname, 'No names available for this selection.')
@@ -212,30 +215,123 @@ server <- function(input, output, session) {
       
       
 ######### unique names map
-      # 
+      
+    #  output$berlin2 <- renderLeaflet(bmap)
+ #       unique <- df%>%
+ #         filter(summe==1)%>%
+ #         select(year,Kiez,vorname)
+ # dim(unique)
+
       # one_filtered <- reactive({
       #   df %>%
-      #     filter(df$anzahl == 1) %>%
+      #     filter(summe == 1) %>%
       #     select(year,Kiez,vorname)
       # })
-      # 
-      # filteredyear<- reactive({
-      #    one_filtered() %>% 
+
+      #prepare data by filtering only unique first names
+      
+      unique <- df %>%
+        filter(summe == 1) %>%
+        select(year,Kiez,vorname)
+      
+      # user selects year with slider
+      
+      
+      filteredyear<- reactive({
+         unique %>%
+          filter(year == input$yearid2)
+      })
+      
+      # data for selected year is joined with map data
+
+       unique_final <- reactive({
+         inner_join(berlin_spdf@data, filteredyear(), by = c("name"= "Kiez"))
+         #geo_join(berlin_spdf@data, filteredyear(), "name", "Kiez")
+       })
+      
+      # when action button "select" is clicked, one sample of first names is chosen
+    #   samp <- eventReactive(input$select3, {
+    # #stratified(filteredyear(), "Kiez", 1)
+    #     stratified(unique_final(), "name", 1)
+    # })
+    #   
+      # when action button "refresh" is clicked, a new sample of first names is chosen
+            samp <- eventReactive(input$refresh, {
+        #stratified(filteredyear(), "Kiez", 1)
+              stratified(unique_final(), "name", 1)
+              
+      })
+            
+           
+      
+    # first names are forwarded to label ??
+      label2<- reactive({
+        paste0(as.character(samp()$vorname))#,
+              # "<b>",as.character(samp()$name))
+            # "</strong>"," in ",as.character(samp()$Kiez))
+      })
+      
+      
+        
+      # label <-reactive({
+      #   samp() %>%
       #     filter(year == input$yearid2)
+      #   })
       # 
+      
+      # 
+      # unique_final <- eventReactive({
+      # paste0(as.character(unique_final()$vorname),
+      #        " (",as.character(unique_final()$name),")")
       # })
-      # 
-      # unique_final <- eventReactive(input$select3, {
-      #   geo_join(berlin_spdf, filteredyear(), "name", "Kiez")
-      #   
-      # })
-      # 
-      # # output$berlin2 <- renderLeaflet(bmap)
-      # # leafletProxy("berlin2", session)# %>%
-      # # addTiles()# %>%
-      # #   addLabelOnlyMarkers(~long, ~lat, label = ~as.character(unique_final()$name),
-      #                       #labelOptions = labelOptions(noHide = T, direction = 'top', textOnly = T))
-      # 
+
+
+       # output$berlin2 <- renderLeaflet(leaflet() %>%
+       #                                  setView(13.41053,52.52437, zoom = 10)%>%
+      # leafletProxy("berlin2", session) %>%
+      #   clearControls() %>%
+      #   clearShapes() %>%
+      #                                   addPolygons(data = berlin_spdf,
+      #                                               fillColor = "#CBECCB",
+      #                                               fillOpacity = 0.9,
+      #                                               weight = 0.2,
+      #                                               smoothFactor = 0.2,
+      #                                               #labelId= unique_final()$name,
+      #                                               label = ~label2(),
+      #                                               labelOptions=labelOptions(permanent=TRUE,textsize = 14),
+      #                                               layerId = berlin_spdf$name
+      #                                               )#,
+      observe({
+       leafletProxy("berlin2", session) %>%
+          clearControls() %>%
+          clearShapes() %>%
+         addPolygons(data = berlin_spdf,
+                     fillColor = "#CBECCB",
+                     fillOpacity = 0.9,
+                     weight = 0.2,
+                     smoothFactor = 0.2,
+                     label = ~label2(),
+                     labelOptions=labelOptions(permanent=TRUE,textsize = 14),
+                     highlight = highlightOptions(
+                       weight = 5,
+                       color = "#666",
+                       fillOpacity = 0.7,
+                       bringToFront = TRUE))
+      
+       output$berliy <- renderTable({
+         samp()
+         #unique_final()
+       })
+       
+       })
+       
+        # setView(13.41053,52.52437, zoom = 10)%>%
+        # addPolygons(data=berlin_spdf)
+        #addTiles()# %>%
+        #addLabelOnlyMarkers(~long, ~lat, label = ~as.character(sample(unique_final()$vorname,5))#,
+    #  labelOptions = labelOptions(noHide = T, direction = 'top', textOnly = T))
+
+      
       # output$r <-renderUI({
       #     validate(
       #         need(filteredyear()$vorname, 'No names available for this selection.')
@@ -245,7 +341,7 @@ server <- function(input, output, session) {
       #             paste("Selection of names that were unique in", input$yearid2)
       #                             })
       #           HTML(as.character(sample(filteredyear()$vorname,5), sep="<br/>"))
-                                # })
+      # })
 
       
       # ######### back end for "Name Trend tab"   

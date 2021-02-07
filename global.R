@@ -24,3 +24,4 @@ readData <- function(session, berlin_spdf, df) {
 #df <<- load("data_archive/finaldf.Rdata")
 min_year <- 2012 #min(df$year)
 max_year <- 2019 #max(df$year)
+

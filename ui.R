@@ -53,8 +53,10 @@ ui <- fluidPage(
                             sidebarPanel(
                                 titlePanel("Hot in the Hood?"),
                                 h4("Popularity of names by Kiez"),
-
-                                helpText("You can choose a name from the selection or type a name of your choice."),
+                                
+                                p("The map shows the rank of the chosen name in the particular neighbourhood or \"Kiez\" as we say in Berlin. By", strong("clicking the map"), "you can access more information regarding the name's total number and percentage."),
+                                br(),
+                                helpText("Either choose or type a name of your choice."),
                                 
                                 selectizeInput("names2",
                                             "First names:",
@@ -67,9 +69,8 @@ ui <- fluidPage(
 
                                 actionButton('select2', 'Select'),
                                 br(),
-                                br(),
-                                h5("Select name and click on map for more information!"),
-#),
+
+                                h5("Time course of the name's popularity from 2012 to 2019:"),
                                 plotOutput("trend", height = 250)
                                 #tableOutput("view")
 
@@ -95,7 +96,7 @@ ui <- fluidPage(
                                 titlePanel("Everybodys darling?"),
                                 h4("Frequency by kiez, gender, year."),
                                 
-                                #helpText("Displaying frequency of first names in Berlin by Kiez, gender, and year. source: Berlin open data."),
+                                p("After choosing Kiez, gender and year, the wordcloud shows the most frequent names for the selection.",br(),"Bigger names were more popular."),
                                 
                                 #width = 2,
                                 #selectInput(inputId="vorname", label="vorname", choices=unique(df$vorname), selected = NULL, multiple = FALSE),
@@ -139,7 +140,7 @@ ui <- fluidPage(
                                 br(), 
                                 
                                 actionButton('select', 'Select'),
-                                h5("Bigger names were more frequent."),
+                                #h5("Bigger names were more frequent."),
                             ),
                             
                             #check:
@@ -162,7 +163,8 @@ tabPanel("the one and only?", fluid = TRUE, icon = icon("star"),
                  sidebarPanel(
                      titlePanel("The one and only?"),
                      h4("Selection of names that were given only once in Berlin."),
-
+                     p("Each time you press the button, you'll see a map with a new selection of first names that were", em("given only once"),"in that particular year in the Kiez."),
+                     
                       helpText("choose a year"),
 
                      sliderInput(

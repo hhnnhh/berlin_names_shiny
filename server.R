@@ -67,6 +67,7 @@ server <- function(input, output, session) {
    
   # filter by name input and select some columns
         filteredName2 <- reactive({
+        req(input$names2)
          df %>%
            filter(vorname == input$names2)#%>%
          # select(vorname,Kiez,summe,percentage,rank) 

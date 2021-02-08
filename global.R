@@ -16,7 +16,8 @@ readData <- function(session, berlin_spdf, df) {
   progress$set(value = 0, message = 'Loading...')
   berlin_spdf <<- readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
   progress$set(value = 0.25, message = 'Loading...')
-  df <<- readRDS("data/finaldf.rds")
+  df <<- readRDS("data/finaldf_kopie.rds")
+  #df <<- read.csv2("data/final_df.csv")
   progress$set(value = 1, message = 'Loading...')
   progress$close()
 }

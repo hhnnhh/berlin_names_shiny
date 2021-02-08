@@ -153,7 +153,7 @@ ui <- fluidPage(
                         ),
     
 
-tabPanel("the one and only?", fluid = TRUE, icon = icon("wave-square"),
+tabPanel("the one and only?", fluid = TRUE, icon = icon("star"),
                                   tags$style(button_color_css),
 
              # Application title
@@ -180,7 +180,7 @@ tabPanel("the one and only?", fluid = TRUE, icon = icon("wave-square"),
                      #actionButton('select3', 'Select'),
                      br(),
                      actionButton('refresh', 'select & refresh'),
-
+                     h5("Refresh to see a new sample of unique names."),
                      ),
 
                  # Show a line graph with name trend

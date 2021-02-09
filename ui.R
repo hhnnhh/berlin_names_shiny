@@ -68,9 +68,9 @@ ui <- fluidPage(
                                 
 
                                 actionButton('select2', 'Select'),
-                                br(),
+                                #br(),
 
-                                h5("Time course of the name's popularity from 2012 to 2019:"),
+                                #h5("Time course of the name's popularity from 2012 to 2019:"),
                                 plotOutput("trend", height = 250)
                                 #tableOutput("view")
 

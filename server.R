@@ -154,8 +154,11 @@ server <- function(input, output, session) {
      
      # plot output --> line graph
      output$trend <- renderPlot({
-     plot(filteredYear()$s~filteredYear()$year, type="b" ,  lwd=2 , col=rgb(0.1,0.7,0.1,0.8) , ylab="total names per year" , xlab="year" ,lty=1, bty="l" , pch=20 , cex=2)
-     }) # close render plot
+     #plot(filteredYear()$s~filteredYear()$year, type="b" ,  lwd=2 , col=rgb(0.1,0.7,0.1,0.8) , ylab="total names per year" , xlab="year" ,lty=1, bty="l" , pch=20 , cex=2)
+       plot(filteredYear()$year,filteredYear()$s, xlim=range(filteredYear()$year), ylim=range(filteredYear()$s), xlab="year", ylab="total number of name", 
+            main = "Time course of popularity 2012 to 2019:",pch=16)
+       lines(filteredYear()$year[order(filteredYear()$year)], filteredYear()$s[order(filteredYear()$year)], xlim=range(filteredYear()$year), ylim=range(filteredYear()$s), pch=16,lty=1,col=rgb(0.1,0.7,0.1,0.8) ,lwd=2,bty="l" )
+       }) # close render plot
      
      }) #close observe function
 

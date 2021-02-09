@@ -63,9 +63,10 @@ server <- function(input, output, session) {
 # large number of options slow down app. --> save on server!
 # https://stackoverflow.com/questions/38438920/shiny-selectinput-very-slow-on-larger-data-15-000-entries-in-browser
   updateSelectizeInput(session, "names2",  choices = unique(df$vorname), server = TRUE)
-    observe({
+   # observe({
+   observeEvent(input$select2,{
    
-  # filter by name input and select some columns
+#### filter by name input and select some columns
         filteredName2 <- reactive({
         req(input$names2)
          df %>%
@@ -74,7 +75,7 @@ server <- function(input, output, session) {
            
      })
         
-        #### Trend plot small below select button 
+#### Trend plot small below select button 
         
         # group remaining data by year and sum total number of names
         filteredYear <- reactive({
@@ -91,7 +92,8 @@ server <- function(input, output, session) {
 
         
   # join filtered data set with spacial data
-     filteredFinal2 <- eventReactive(input$select2, {
+     #filteredFinal2 <- eventReactive(input$select2, {
+       filteredFinal2 <- reactive({
        geo_join(berlin_spdf, filteredName2(), "name", "Kiez")
 
      })
@@ -122,9 +124,9 @@ server <- function(input, output, session) {
      
 # Text will help explain what user is seeing 
      
-          output$text2 <- renderText({
-            paste("<strong>",input$names2,"</strong>: Rank, percentage and total number for each Kiez in Berlin between 2012 and 2019.")
-          })
+    # observeEvent(input$select,{
+     
+
 
 # these are only the parts of the map that vary with reactive content
 # main part / template of the map ("bmap") is rendered at the beginning of server.R
@@ -151,18 +153,28 @@ server <- function(input, output, session) {
      # output$view <- renderTable({
      #   filteredYear()$s
      # })
+
      
      # plot output --> line graph
+    # isolate(
      output$trend <- renderPlot({
      #plot(filteredYear()$s~filteredYear()$year, type="b" ,  lwd=2 , col=rgb(0.1,0.7,0.1,0.8) , ylab="total names per year" , xlab="year" ,lty=1, bty="l" , pch=20 , cex=2)
        plot(filteredYear()$year,filteredYear()$s, xlim=range(filteredYear()$year), ylim=range(filteredYear()$s), xlab="year", ylab="total number of name", 
             main = "Time course of popularity 2012 to 2019:",pch=16)
        lines(filteredYear()$year[order(filteredYear()$year)], filteredYear()$s[order(filteredYear()$year)], xlim=range(filteredYear()$year), ylim=range(filteredYear()$s), pch=16,lty=1,col=rgb(0.1,0.7,0.1,0.8) ,lwd=2,bty="l" )
+       
        }) # close render plot
+       
+    # )# close isolate
      
+    # )} # observeEvent 
      }) #close observe function
 
-
+   observeEvent(input$select2,{
+   output$text2 <- renderText({
+     paste("<strong>",input$names2,"</strong>: Rank, percentage and total number for each Kiez in Berlin between 2012 and 2019.")
+   })
+   })
 
      
 #display table data --> helpful for debugging purposes
@@ -275,36 +287,7 @@ server <- function(input, output, session) {
             # "</strong>"," in ",as.character(samp()$Kiez))
       })
       
-      
-        
-      # label <-reactive({
-      #   samp() %>%
-      #     filter(year == input$yearid2)
-      #   })
-      # 
-      
-      # 
-      # unique_final <- eventReactive({
-      # paste0(as.character(unique_final()$vorname),
-      #        " (",as.character(unique_final()$name),")")
-      # })
 
-
-       # output$berlin2 <- renderLeaflet(leaflet() %>%
-       #                                  setView(13.41053,52.52437, zoom = 10)%>%
-      # leafletProxy("berlin2", session) %>%
-      #   clearControls() %>%
-      #   clearShapes() %>%
-      #                                   addPolygons(data = berlin_spdf,
-      #                                               fillColor = "#CBECCB",
-      #                                               fillOpacity = 0.9,
-      #                                               weight = 0.2,
-      #                                               smoothFactor = 0.2,
-      #                                               #labelId= unique_final()$name,
-      #                                               label = ~label2(),
-      #                                               labelOptions=labelOptions(permanent=TRUE,textsize = 14),
-      #                                               layerId = berlin_spdf$name
-      #                                               )#,
       observe({
        leafletProxy("berlin2", session) %>%
           clearControls() %>%

@@ -53,7 +53,7 @@ ui <- fluidPage(
 ######### front end for "Kiez Popularity tab"  
     
 
-               tabPanel("Kiez Personalities", fluid = TRUE, icon = icon("globe"),
+               tabPanel("The Kiez Personalities", fluid = TRUE, icon = icon("globe"),
                         tags$style(button_color_css),
 
                         sidebarLayout(
@@ -61,7 +61,7 @@ ui <- fluidPage(
                                 titlePanel("Hot in the Hood?"),
                                 h4("Popularity of names by Kiez"),
                                 
-                                p("The map shows the rank of the chosen name in the particular neighbourhood or \"Kiez\" as we say in Berlin. By", strong("clicking the map"), "you can access more information regarding the name's total number and percentage."),
+                                p("The map shows the rank of the chosen name in the particular neighborhood or \"Kiez\" as we say in Berlin. By", strong("clicking the map"), "you can access more information regarding the name's total number and percentage."),
                                 br(),
                                 helpText("Either choose or type a name of your choice."),
                                 
@@ -95,15 +95,15 @@ ui <- fluidPage(
 
 ######### front end for "Frequent names" tab
 
-                tabPanel("Popular Names", fluid = TRUE, icon = icon("cloud"),
+                tabPanel("The Favorites", fluid = TRUE, icon = icon("cloud"),
                     tags$style(button_color_css),
 
                         sidebarLayout(
                             sidebarPanel(
                                 titlePanel("Everybodys darling?"),
-                                h4("Frequency by kiez, gender, year."),
+                                h4("Frequency by Kiez, gender, year"),
                                 
-                                p("After choosing Kiez, gender and year, the wordcloud shows the most frequent names for the selection.",br(),"Bigger names were more popular."),
+                                p("The wordcloud shows the popularity of the names for the selected features. Bigger names are more popular."),
                                 
                                 #width = 2,
                                 #selectInput(inputId="vorname", label="vorname", choices=unique(df$vorname), selected = NULL, multiple = FALSE),
@@ -161,15 +161,15 @@ ui <- fluidPage(
                         ),
     
 
-tabPanel("the one and only?", fluid = TRUE, icon = icon("star"),
+tabPanel("The Special Ones", fluid = TRUE, icon = icon("star"),
                                   tags$style(button_color_css),
 
              # Application title
              # Sidebar with drop down menu
              sidebarLayout(
                  sidebarPanel(
-                     titlePanel("The one and only?"),
-                     h4("Selection of names that were given only once in Berlin."),
+                     titlePanel("One and only?"),
+                     h4("Unique names in Berlin"),
                      p("Each time you press the button, you'll see a map with a new selection of first names that were", em("given only once"),"in that particular year in the Kiez."),
                      
                       helpText("choose a year"),

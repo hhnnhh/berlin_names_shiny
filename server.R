@@ -11,6 +11,8 @@
 # 
 #     useful tip for long loading time issue
 #     https://github.com/rstudio/shiny-server/issues/456
+## 
+## When adding a new year, change plot range in line 162 -- needed to be hard-coded, was reactive
 
 
 library(shiny)            # for web app
@@ -61,7 +63,7 @@ server <- function(input, output, session) {
 
 # large number of options slow down app. --> save on server!
 # https://stackoverflow.com/questions/38438920/shiny-selectinput-very-slow-on-larger-data-15-000-entries-in-browser
-  updateSelectizeInput(session, "names2",  choices = unique(df$vorname), server = TRUE)
+  updateSelectizeInput(session, "names2",  choices = c("Luzifer",as.character(unique(df$vorname))), server = TRUE)
    # observe({
    observeEvent(input$select2,{
    
@@ -157,8 +159,8 @@ server <- function(input, output, session) {
      # plot output --> line graph
     # isolate(
      output$trend <- renderPlot({
-       plot(filteredYear()$year,filteredYear()$s, xlim=range(filteredYear()$year), ylim=lim0(filteredYear()$s+20), xlab="year", ylab="total number of name", 
-            main = "Time course of popularity 2012 to 2019:",pch=16,bty="l")
+       plot(filteredYear()$year,filteredYear()$s, xlim=range(min_year,max_year), ylim=lim0(filteredYear()$s+20), xlab="year", ylab="total number of name", 
+            main = "Popularity from 2012 to 2019",pch=16,bty="l")
        lines(filteredYear()$year[order(filteredYear()$year)], filteredYear()$s[order(filteredYear()$year)], xlim=range(filteredYear()$year), ylim=range(filteredYear()$s), pch=16,lty=1,col=rgb(0.1,0.7,0.1,0.8) ,lwd=2)
 
 
@@ -226,23 +228,11 @@ server <- function(input, output, session) {
           need(fully_filtered()$vorname, 'No names available for this selection.')
         )
         p<-wordcloud(words = fully_filtered()$vorname, freq = fully_filtered()$anzahl, colors=brewer.pal(8,"BrBG"),min.freq = 2, max.words=200, random.order=FALSE, rot.per=0.35,scale=c(3.5,0.25))
-        #renderWordcloud2(wordcloud2(data = fully_filtered()$vorname,colors=brewer.pal(8,"BrBG")))
         }) # close output$plot
       
       
 ######### unique names map
       
-    #  output$berlin2 <- renderLeaflet(bmap)
- #       unique <- df%>%
- #         filter(summe==1)%>%
- #         select(year,Kiez,vorname)
- # dim(unique)
-
-      # one_filtered <- reactive({
-      #   df %>%
-      #     filter(summe == 1) %>%
-      #     select(year,Kiez,vorname)
-      # })
 
       #prepare data by filtering only unique first names
       
@@ -302,7 +292,6 @@ server <- function(input, output, session) {
                      smoothFactor = 0.2,
                      label = ~label2(),
                      labelOptions=labelOptions(textsize = 14, direction = 'center',permanent=TRUE,opacity = 0.7),#textOnly = T
-                     #options = markerOptions(riseOnHover = TRUE),
                      highlight = highlightOptions(
                        weight = 5,
                        color = "#666",

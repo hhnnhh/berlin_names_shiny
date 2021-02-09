@@ -27,7 +27,7 @@ library(data.table)       # loading data with progress bar
 #devtools::install_github("lchiffon/wordcloud2")
 #library(wordcloud2)
 library(splitstackshape)  # drawing random samples, with one "vorname" for each Kiez ("unique name map")
-
+library(berryFunctions)
 
 
 # frequencies and names from Berlin Open Data
@@ -35,7 +35,6 @@ library(splitstackshape)  # drawing random samples, with one "vorname" for each 
 # loading data without progress bar: 
 # df <- readRDS("data/finaldf.rds")
 # berlin_spdf=readOGR("data/map2", layer="berliner_bezirke",use_iconv = TRUE, encoding = "UTF-8")
-
 
  
 server <- function(input, output, session) {
@@ -158,10 +157,11 @@ server <- function(input, output, session) {
      # plot output --> line graph
     # isolate(
      output$trend <- renderPlot({
-     #plot(filteredYear()$s~filteredYear()$year, type="b" ,  lwd=2 , col=rgb(0.1,0.7,0.1,0.8) , ylab="total names per year" , xlab="year" ,lty=1, bty="l" , pch=20 , cex=2)
-       plot(filteredYear()$year,filteredYear()$s, xlim=range(filteredYear()$year), ylim=range(filteredYear()$s), xlab="year", ylab="total number of name", 
-            main = "Time course of popularity 2012 to 2019:",pch=16)
-       lines(filteredYear()$year[order(filteredYear()$year)], filteredYear()$s[order(filteredYear()$year)], xlim=range(filteredYear()$year), ylim=range(filteredYear()$s), pch=16,lty=1,col=rgb(0.1,0.7,0.1,0.8) ,lwd=2,bty="l" )
+       plot(filteredYear()$year,filteredYear()$s, xlim=range(filteredYear()$year), ylim=lim0(filteredYear()$s+20), xlab="year", ylab="total number of name", 
+            main = "Time course of popularity 2012 to 2019:",pch=16,bty="l")
+       lines(filteredYear()$year[order(filteredYear()$year)], filteredYear()$s[order(filteredYear()$year)], xlim=range(filteredYear()$year), ylim=range(filteredYear()$s), pch=16,lty=1,col=rgb(0.1,0.7,0.1,0.8) ,lwd=2)
+
+
        
        }) # close render plot
        
@@ -288,7 +288,10 @@ server <- function(input, output, session) {
       })
       
 
+
       observe({
+
+        
        leafletProxy("berlin2", session) %>%
           clearControls() %>%
           clearShapes() %>%
@@ -298,7 +301,8 @@ server <- function(input, output, session) {
                      weight = 0.2,
                      smoothFactor = 0.2,
                      label = ~label2(),
-                     labelOptions=labelOptions(permanent=TRUE,textsize = 14),
+                     labelOptions=labelOptions(textsize = 14, direction = 'center',permanent=TRUE,opacity = 0.7),#textOnly = T
+                     #options = markerOptions(riseOnHover = TRUE),
                      highlight = highlightOptions(
                        weight = 5,
                        color = "#666",

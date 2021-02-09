@@ -19,6 +19,7 @@ shinyOptions(bslib = TRUE)
 bs_global_theme()
 thematic::thematic_shiny(font = "auto")
 
+
  # thematic_on(
  #   font = "auto"
  # )
@@ -38,8 +39,14 @@ background: DodgerBlue;
 font-size: 15px;
 }"
 
+tags$script(src = "myscript.js")
 # Define UI for application 
 ui <- fluidPage( 
+  
+
+
+
+
   
     navbarPage("Berlin Names", theme = theme, #theme = shinytheme("lumen"),
 
@@ -71,7 +78,7 @@ ui <- fluidPage(
                                 #br(),
 
                                 #h5("Time course of the name's popularity from 2012 to 2019:"),
-                                plotOutput("trend", height = 250)
+                                plotOutput("trend", height = 280)
                                 #tableOutput("view")
 
                             ),

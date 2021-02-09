@@ -1,5 +1,54 @@
 # show name trend
 library(dplyr)
+
+df<-read.csv("data_archive/berlin.csv",encoding = "UTF-8")
+tail(df,10)
+
+## taking dataframe and calculate sum, total and percentage for shiny app
+
+# omit year --> working while keeping all variables (puh)
+final_df<-df %>% 
+  group_by(vorname,Kiez)%>%
+  mutate(summe=sum(anzahl))%>%# bis hier stimmt es
+  group_by(Kiez)%>%
+  mutate(total=sum(anzahl))%>%
+  group_by(vorname,Kiez)%>%
+  mutate(percentage=round(((summe/total)*100),digits=2))%>%
+  ungroup()
+
+## rank must be calculated separateley
+#finally calculate rank
+rank_df <- final_df %>%
+  distinct(vorname,Kiez,summe)%>%
+  group_by(Kiez) %>% 
+  mutate(r=rank(desc(summe)))
+
+#join ranked data with final data
+
+newdataframe <- inner_join(rank_df,final_df)
+tail(newdataframe,10) # does it work? are all special characters displayed correctly?
+## if it  doesnt work: shiny server is working with utf-8
+## csv file must be in utf-8
+## RStudio session must be in utf-8
+## AND read.csv at the beginning must be in utf-8. If it does not display correctly here
+## it wont display correctly on the server!
+newdataframe$ï..a<-NULL
+newdataframe$total<-NULL
+newdataframe$rank <- round((newdataframe$r),digits=0)
+newdataframe$r<-NULL
+newdataframe$a<-NULL
+
+# insert mock data column
+newdataframe <- cbind(a = 0, newdataframe) ## it was necessary when using utf-8-bom, but might not be necessary anymore
+head(newdataframe)
+# and save data frame
+saveRDS(newdataframe,"data/finaldf_kopie.rds")
+write_excel_csv(newdataframe, "data/final_df.csv")
+
+newdataframe[grep("<", rownames(newdataframe)), ]
+
+
+
 m<-NULL
 m<-df %>% 
   select(vorname,year,anzahl) %>% 
@@ -76,35 +125,7 @@ final_df1<-df %>%
   mutate(rank=round(rank(desc(summe))))
 
 
-# omit year --> working while keeping all variables (puh)
-final_df<-df %>% 
-  group_by(vorname,Kiez)%>%
-  mutate(summe=sum(anzahl))%>%# bis hier stimmt es
-  group_by(Kiez)%>%
-  mutate(total=sum(anzahl))%>%
-  group_by(vorname,Kiez)%>%
-  mutate(percentage=round(((summe/total)*100),digits=2))%>%
-  ungroup()
 
-#finally calculate rank
-rank_df <- final_df %>%
-  distinct(vorname,Kiez,summe)%>%
-  group_by(Kiez) %>% 
-  mutate(r=rank(desc(summe)))
-
-#join ranked data with final data
-
-newdataframe <- inner_join(rank_df,final_df)
-newdataframe$ï..a<-NULL
-newdataframe$total<-NULL
-newdataframe$rank <- round((newdataframe$r),digits=0)
-newdataframe$r<-NULL
-
-# insert mock data column
-newdataframe <- cbind(a = 0, newdataframe)
-head(newdataframe)
-# and save data frame
-write_excel_csv(newdataframe, "data/final_df.csv")
 
 save(df, file = "data/finaldf.Rdata")
 
@@ -113,20 +134,35 @@ library(readr)
 # final_df <- cbind(a = 0, final_df)
 # names(final_df)
 write_excel_csv(rank_df, "data/map_df2.csv")
-  
-# finally filter name from "newdata"
-namedata2<-rank_df %>%
-  ungroup()%>%
-  filter(vorname == "Marie")%>%
-  distinct(Kiez,summe,percentage,r)
+#   
+# # finally filter name from "newdata"
+# namedata2<-rank_df %>%
+#   ungroup()%>%
+#   filter(vorname == "Marie")%>%
+#   distinct(Kiez,summe,percentage,r)
+# 
+# marie<-df %>%
+#   ungroup()%>%
+#   filter(vorname == "Marie")
+# write_excel_csv(marie, "data/marie.csv")
 
-marie<-df %>%
-  ungroup()%>%
-  filter(vorname == "Marie")
-write_excel_csv(marie, "data/marie.csv")
-saveRDS(df,"data/finaldf.rds")
 
+df<-read_file("data/input-onlineunicodetools.txt")
+tail(df,10)
+
+df$vorname <- enc2utf8(df$vorname)
+print(df$vorname)
+?read.csv2
+
+tail(df,10)
+saveRDS(df,"data/finaldf_kopie.rds")
+write_excel_csv(df,"data/csv_kopie.csv")
+
+my_data<-readRDS("data/finaldf_kopie.rds")
+tail(my_data,10)
 my_data<-readRDS("data/finaldf.rds")
+
 
 winner<-final_df %>% 
   filter(r == 1)
+

@@ -12,7 +12,6 @@
 #     useful tip for long loading time issue
 #     https://github.com/rstudio/shiny-server/issues/456
 ## 
-## When adding a new year, change plot range in line 162 -- needed to be hard-coded, was reactive
 
 
 library(shiny)            # for web app

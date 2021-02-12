@@ -39,10 +39,19 @@ background: DodgerBlue;
 font-size: 15px;
 }"
 
-tags$script(src = "myscript.js")
 # Define UI for application 
 ui <- fluidPage( 
-  
+  # this part removes the color from the sliderbar
+  tags$style(
+    ".irs-bar {",
+    "  border-color: transparent;",
+    "  background-color: transparent;",
+    "}",
+    ".irs-bar-edge {",
+    "  border-color: transparent;",
+    "  background-color: transparent;",
+    "}"
+  ),
 
 
 
